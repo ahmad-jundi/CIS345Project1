@@ -4,7 +4,7 @@
 #include <math.h>
 
 // Number of threads and limit of sum calculation
-int x, y; //m, n
+int m, n; //m, n
 
 // Global sum of quadruple roots
 double sum = 0;
@@ -15,8 +15,8 @@ pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 // Function to calculate sum of quadruple roots for each thread
 void* quad_root_sum(void* thread_id) {
     // Calculate start and end indices for the thread
-    int start = thread_id * (y / x); //n,m
-    int end = (thread_id + 1) * (y / x);//n,m
+    int start = (int)thread_id * (n / m); //n,m
+    int end = ((int)thread_id + 1) * (n / m);//n,m
 
     // Local sum for each thread
     double thread_sum = 0;
@@ -41,26 +41,26 @@ void* quad_root_sum(void* thread_id) {
 int main(int argc, char* argv[]) {
     // Check for correct number of arguments
     if (argc != 3) {
-        printf("Usage: %s x y\n", argv[0]);
+        printf("Usage: %s m n\n", argv[0]);
         return 1;
     }
 
     // Get the number of threads and limit of sum calculation from arguments
     //atoi = argument to integer
-    x = atoi(argv[1]); //m
-    y = atoi(argv[2]); //n
+    m = atoi(argv[1]); //m
+    n = atoi(argv[2]); //n
 
     // Array to store thread IDs
-    pthread_t threads[x];
+    pthread_t threads[m];
 
 
     // Create `x` threads
-    for (long i = 0; i < x; i++) {
+    for (long i = 0; i < m; i++) {
         pthread_create(&threads[i], NULL, quad_root_sum, (void*)i);   //void* makes it so no matter what type of value i is, it will take that
     }
 
     // Wait for all threads to finish execution
-    for (int i = 0; i < x; i++) {
+    for (int i = 0; i < m; i++) {
         pthread_join(threads[i], NULL);
     }
 
@@ -74,4 +74,4 @@ int main(int argc, char* argv[]) {
 //Note to self: To compile the code, make sure to use -lpthread and -lm to implement the pthread and math libraries
 //So it would look like: gcc -o thr_atomic thr_atomic.c -lpthread -lm
 
-//To run the code: ./thr_atomic [x] [y]
+//To run the code: ./thr_atomic [m] [n]
