@@ -4,22 +4,19 @@
 #include <math.h>
 
 // Number of threads and limit of sum calculation
-int x, y;
+int x, y; //m, n
 
 // Global sum of quadruple roots
 double sum = 0;
 
-// Mutex lock to access shared variable `sum`
-pthread_mutex_t lock;
+// Initialize mutex
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 // Function to calculate sum of quadruple roots for each thread
-void* quad_root_sum(void* arg) {
-    // Get thread id from argument
-    int thread_id = *((int*) arg);
-
+void* quad_root_sum(void* thread_id) {
     // Calculate start and end indices for the thread
-    int start = thread_id * (y / x);
-    int end = (thread_id + 1) * (y / x);
+    int start = thread_id * (y / x); //n,m
+    int end = (thread_id + 1) * (y / x);//n,m
 
     // Local sum for each thread
     double thread_sum = 0;
@@ -35,7 +32,7 @@ void* quad_root_sum(void* arg) {
     pthread_mutex_unlock(&lock);
 
     // Print the local sum for each thread
-    printf("thr %d: %f\n", thread_id, thread_sum);
+    printf("thr %ld: %f\n", thread_id, thread_sum);
 
     // Return null as function return type is `void*`
     return NULL;
@@ -49,20 +46,17 @@ int main(int argc, char* argv[]) {
     }
 
     // Get the number of threads and limit of sum calculation from arguments
-    x = atoi(argv[1]);
-    y = atoi(argv[2]);
+    //atoi = argument to integer
+    x = atoi(argv[1]); //m
+    y = atoi(argv[2]); //n
 
     // Array to store thread IDs
     pthread_t threads[x];
-    int thread_ids[x];
 
-    // Initialize the mutex lock
-    pthread_mutex_init(&lock, NULL);
 
     // Create `x` threads
-    for (int i = 0; i < x; i++) {
-        thread_ids[i] = i;
-        pthread_create(&threads[i], NULL, quad_root_sum, &thread_ids[i]);
+    for (long i = 0; i < x; i++) {
+        pthread_create(&threads[i], NULL, quad_root_sum, (void*)i);   //void* makes it so no matter what type of value i is, it will take that
     }
 
     // Wait for all threads to finish execution
@@ -72,9 +66,6 @@ int main(int argc, char* argv[]) {
 
     // Print the final sum of quadruple roots
     printf("sum of quadruple roots: %f\n", sum);
-
-    // Destroy the mutex lock
-    pthread_mutex_destroy(&lock);
 
     // Return 0 as main function return type is `int`
     return 0;
